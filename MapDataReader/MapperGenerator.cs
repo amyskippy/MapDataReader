@@ -130,6 +130,44 @@ namespace MapDataReader
 		{
 			context.RegisterForSyntaxNotifications(() => new TargetTypeTracker());
 		}
+
+		private string GetAccessModifer(ClassDeclarationSyntax typeNode)
+		{
+			// Retrieve the attribute list
+			var attributeList = typeNode.AttributeLists
+				.SelectMany(al => al.Attributes)
+				.FirstOrDefault(attr => attr.Name.ToString() == "GenerateDataReaderMapper");
+
+			if (attributeList?.ArgumentList == null)
+				return "public";
+			
+			var arguments = attributeList.ArgumentList.Arguments;
+			
+			if (arguments.Count == 0)
+				return "public";
+
+			if (arguments.Count == 1)
+			{
+				var argumentExpr = arguments[0].Expression as LiteralExpressionSyntax;
+				return argumentExpr?.Token.ValueText ?? "public";
+			}
+
+			foreach (var argument in arguments)
+			{
+				// Check if the argument is a named argument
+				if (argument is AttributeArgumentSyntax attributeArgument)
+				{
+					var nameEquals = attributeArgument.NameEquals;
+					if (nameEquals?.Name.Identifier.Text == "AccessModifier")
+					{
+						var argumentExpr = argument.Expression as LiteralExpressionSyntax;
+						return argumentExpr?.Token.ValueText ?? "public";
+					}
+				}
+			}
+			
+			return "public";
+		}
 	}
 
 	internal class TargetTypeTracker : ISyntaxContextReceiver
