@@ -148,7 +148,7 @@ namespace MapDataReader.Tests
 		}
 
 		[TestMethod]
-		public void TestDatatReader()
+		public void TestDataReader()
 		{
 			//create datatable with test data
 			var dt = new DataTable();
