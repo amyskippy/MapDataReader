@@ -29,13 +29,21 @@ namespace MapDataReader
 	{
 		public void Execute(GeneratorExecutionContext context)
 		{
-			var targetTypeTracker = context.SyntaxContextReceiver as TargetTypeTracker;
+			if (context.SyntaxContextReceiver is not TargetTypeTracker targetTypeTracker)
+			{
+				return;
+			}
 
 			foreach (var typeNode in targetTypeTracker.TypesNeedingGening)
 			{
 				var typeNodeSymbol = context.Compilation
 					.GetSemanticModel(typeNode.SyntaxTree)
 					.GetDeclaredSymbol(typeNode);
+
+				if (typeNodeSymbol is null)
+				{
+					continue;
+				}
 
 				var allProperties = typeNodeSymbol.GetAllSettableProperties();
 
