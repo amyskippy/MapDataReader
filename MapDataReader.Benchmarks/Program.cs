@@ -63,10 +63,30 @@ namespace MapDataReader.Benchmarks
 		}
 
 		[Benchmark]
-		public void MapDataReader_ViaMapaDataReader()
+		public void MapDataReader_ViaMapDataReader()
 		{
 			var dr = _dt.CreateDataReader();
 			var list = dr.ToTestClass();
+		}
+
+		[Benchmark]
+		public void MapDataReader_ViaManualMap()
+		{
+			var dr = _dt.CreateDataReader();
+
+			var list = new List<TestClass>();
+			while (dr.Read())
+			{
+				list.Add(new TestClass
+				{
+					String1 = dr["String1"] as string,
+					String2 = dr["String2"] as string,
+					String3 = dr["String3"] as string,
+					Int = dr.GetInt32(3),
+					Int2 = dr.GetInt32(4),
+					IntNullable = dr["IntNullable"] as int?
+				});
+			}
 		}
 
 		static DataTable _dt;
@@ -99,8 +119,8 @@ namespace MapDataReader.Benchmarks
 		public string String1 { get; set; }
 		public string String2 { get; set; }
 		public string String3 { get; set; }
-		public string Int { get; set; }
-		public string Int2 { get; set; }
+		public int Int { get; set; }
+		public int Int2 { get; set; }
 		public int? IntNullable { get; set; }
 	}
 }
