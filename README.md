@@ -36,7 +36,7 @@ public class MyClass
 
 var dataReader = new SqlCommand("SELECT * FROM MyTable", connection).ExecuteReader();
 
-List<MyClass> results = dataReader.ToMyClass(); // "ToMyClass" method is generated at compile time
+List<MyClass> results = dataReader.To<MyClass>();
 ```
 
 Some notes for the above
@@ -48,6 +48,14 @@ Some notes for the above
 * Supports `enum` properties based on `int` and other implicit casting (sometimes a DataReader may decide to return `byte` for small integer database value, and it maps to `int` perfectly via some unboxing magic)
 * Properly maps `DBNull` to `null`.
 * Complex-type properties may not work.
+
+### Legacy Mapping Method
+
+The `To<T>()` method has been added to unify the method calls, however the previous version of this method is maintained for now.
+
+```csharp
+List<MyClass> results = dataReader.ToMyClass();
+```
 
 ## Bonus API: `SetPropertyByName`
 
