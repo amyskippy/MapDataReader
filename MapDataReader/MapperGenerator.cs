@@ -196,9 +196,9 @@ namespace MapDataReader
 
 			if (attributeList?.ArgumentList == null)
 				return "public";
-			
+
 			var arguments = attributeList.ArgumentList.Arguments;
-			
+
 			if (arguments.Count == 0)
 				return "public";
 
@@ -211,17 +211,13 @@ namespace MapDataReader
 			foreach (var argument in arguments)
 			{
 				// Check if the argument is a named argument
-				if (argument is AttributeArgumentSyntax attributeArgument)
+				if (argument is { NameEquals.Name.Identifier.Text: "AccessModifier" })
 				{
-					var nameEquals = attributeArgument.NameEquals;
-					if (nameEquals?.Name.Identifier.Text == "AccessModifier")
-					{
-						var argumentExpr = argument.Expression as LiteralExpressionSyntax;
-						return argumentExpr?.Token.ValueText ?? "public";
-					}
+					var argumentExpr = argument.Expression as LiteralExpressionSyntax;
+					return argumentExpr?.Token.ValueText ?? "public";
 				}
 			}
-			
+
 			return "public";
 		}
 	}
@@ -232,19 +228,19 @@ namespace MapDataReader
 
 		public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
 		{
-			if (context.Node is ClassDeclarationSyntax cdecl)
-				if (cdecl.IsDecoratedWithAttribute("GenerateDataReaderMapper"))
-					TypesNeedingGening = TypesNeedingGening.Add(cdecl);
+			if (context.Node is not ClassDeclarationSyntax classDec) return;
+			
+			if (classDec.IsDecoratedWithAttribute("GenerateDataReaderMapper"))
+				TypesNeedingGening = TypesNeedingGening.Add(classDec);
 		}
 	}
 
 	internal static class Helpers
 	{
-		internal static bool IsDecoratedWithAttribute(this TypeDeclarationSyntax cdecl, string attributeName) =>
-			cdecl.AttributeLists
+		internal static bool IsDecoratedWithAttribute(this TypeDeclarationSyntax typeDec, string attributeName) =>
+			typeDec.AttributeLists
 				.SelectMany(x => x.Attributes)
 				.Any(x => x.Name.ToString().Contains(attributeName));
-
 
 		internal static string FullName(this ITypeSymbol typeSymbol) => typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
@@ -277,12 +273,11 @@ namespace MapDataReader
 			//tries to get underlying non-nullable type from nullable type
 			//and then check if it's Enum
 			if (symbol.NullableAnnotation == NullableAnnotation.Annotated
-				&& symbol is INamedTypeSymbol namedType
-				&& namedType.IsValueType
-				&& namedType.IsGenericType
-				&& namedType.ConstructedFrom?.ToDisplayString() == "System.Nullable<T>"
-			)
+			    && symbol is INamedTypeSymbol { IsValueType: true, IsGenericType: true } namedType
+			    && namedType.ConstructedFrom.ToDisplayString() == "System.Nullable<T>")
+			{
 				return namedType.TypeArguments[0].TypeKind == TypeKind.Enum;
+			}
 
 			return false;
 		}
