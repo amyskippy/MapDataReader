@@ -8,25 +8,58 @@ using System.Linq;
 
 namespace MapDataReader
 {
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	/// <summary>
+	/// An attribute used to mark a class for which a data reader mapper will be generated.
+	/// </summary>
+	/// <remarks>
+	/// The auto-generated mappers will help in mapping data from a data reader to the class properties.
+	/// </remarks>
+	[AttributeUsage(AttributeTargets.Class)]
 	public class GenerateDataReaderMapperAttribute : Attribute
 	{
+		/// <summary>
+		/// Gets or sets the access modifier for the generated methods.
+		/// </summary>
+		/// <value>
+		/// A string representing the access modifier (e.g., "public", "internal") for the generated methods.
+		/// </value>
 		public string AccessModifier { get; set; }
 
+		/// <inheritdoc />
 		public GenerateDataReaderMapperAttribute()
 		{
 			AccessModifier = "public";
 		}
 
+		/// <param name="access">
+		/// Change the access modifier of the generated methods.
+		/// See <see cref="AccessModifier"/> for more information.
+		/// </param>
+		/// <inheritdoc />
 		public GenerateDataReaderMapperAttribute(string access = "public")
 		{
 			AccessModifier = access;
 		}
 	}
 
+	/// <summary>
+	/// A source generator responsible for creating mapping extensions that allow for setting properties of a class
+	/// based on the property name using data from a data reader.
+	/// </summary>
+	/// <remarks>
+	/// This generator scans for classes marked with specific attributes and generates an extension method
+	/// that facilitates setting properties by their names.
+	/// </remarks>
 	[Generator]
 	public class MapperGenerator : ISourceGenerator
 	{
+		private const string Newline = @"
+";
+
+		/// <summary>
+		/// Executes the source generation logic, which scans for types needing generation,
+		/// processes their properties, and generates the corresponding source code for mapping extensions.
+		/// </summary>
 		public void Execute(GeneratorExecutionContext context)
 		{
 			if (context.SyntaxContextReceiver is not TargetTypeTracker targetTypeTracker)
@@ -145,6 +178,10 @@ namespace MapDataReader
 			}
 		}
 
+		/// <summary>
+		/// Initializes the generator. This method is called before any generation occurs and allows
+		/// for setting up any necessary context or registering for specific notifications.
+		/// </summary>
 		public void Initialize(GeneratorInitializationContext context)
 		{
 			context.RegisterForSyntaxNotifications(() => new TargetTypeTracker());
@@ -213,7 +250,9 @@ namespace MapDataReader
 
 		internal static string StringConcat(this IEnumerable<string> source, string separator) => string.Join(separator, source);
 
-		// returns all properties with public setters
+		/// <summary>
+		/// Returns all properties with public setters
+		/// </summary>
 		internal static IEnumerable<IPropertySymbol> GetAllSettableProperties(this ITypeSymbol typeSymbol)
 		{
 			var result = typeSymbol
@@ -230,7 +269,9 @@ namespace MapDataReader
 			return result;
 		}
 
-		//checks if type is a nullable num
+		/// <summary>
+		/// Checks if type is a nullable Enum
+		/// </summary>
 		internal static bool IsNullableEnum(this ITypeSymbol symbol)
 		{
 			//tries to get underlying non-nullable type from nullable type
