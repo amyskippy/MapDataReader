@@ -36,7 +36,7 @@ public class MyClass
 
 var dataReader = new SqlCommand("SELECT * FROM MyTable", connection).ExecuteReader();
 
-List<MyClass> results = dataReader.ToMyClass(); // "ToMyClass" method is generated at compile time
+List<MyClass> results = dataReader.To<MyClass>();
 ```
 
 Some notes for the above
@@ -49,13 +49,21 @@ Some notes for the above
 * Properly maps `DBNull` to `null`.
 * Complex-type properties may not work.
 
+### Legacy Mapping Method
+
+The `To<T>()` method has been added to unify the method calls, however the previous version of this method is maintained for now.
+
+```csharp
+List<MyClass> results = dataReader.ToMyClass();
+```
+
 ### Access Modifier: `public` or `internal`
 
 You can now specify the access modifer to be used with the mapping methods. By default, the methods will be `public` for backwards compatability.
 
 For example, to prevent exposure outside your assembly you'd set it to `internal`. This would hide the mapping methods outside your model project:
 
-``` csharp
+```csharp
 [GenerateDataReaderMapper("internal")]
 public class MyClass
 {

@@ -66,7 +66,7 @@ namespace MapDataReader.Benchmarks
 		public void MapDataReader_ViaMapDataReader()
 		{
 			var dr = _dt.CreateDataReader();
-			var list = dr.ToTestClass();
+			var list = dr.To<TestClass>();
 		}
 
 		[Benchmark]
