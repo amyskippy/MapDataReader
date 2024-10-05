@@ -1,8 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Immutable;
 using System.Data;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace MapDataReader.Tests
@@ -50,6 +48,60 @@ namespace MyCode
 		public System.DateTime Created {get;set;}
 		public System.DateTimeOffset Offset {get;set;}
 		public decimal Price {get;set;}
+	}
+}
+";
+			var src = GetAndCheckOutputSource(userSource);
+		}
+		
+		[TestMethod]
+		public void TestEnumByte()
+		{
+			string userSource = @"
+using MapDataReader;
+
+namespace MyCode
+{
+	public enum MyEnumByte : byte
+	{
+		FirstLady,
+		SecondLady,
+		ThirdLady,
+	}
+
+	[GenerateDataReaderMapper()]
+	public class MyClass
+	{
+		public string Name {get;set;}
+		public MyEnumByte Lady {get;set;}
+		public MyEnumByte? LadyNull {get;set;}
+	}
+}
+";
+			var src = GetAndCheckOutputSource(userSource);
+		}
+		
+		[TestMethod]
+		public void TestEnumShort()
+		{
+			string userSource = @"
+using MapDataReader;
+
+namespace MyCode
+{
+	public enum MyEnumShort : short
+	{
+		FirstChild,
+		SecondChild,
+		ThirdChild,
+	}
+
+	[GenerateDataReaderMapper()]
+	public class MyClass
+	{
+		public string Name {get;set;}
+		public MyEnumShort Child {get;set;}
+		public MyEnumShort? ChildNull {get;set;}
 	}
 }
 ";

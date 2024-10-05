@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Data;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapDataReader.Tests
 {
@@ -14,6 +8,20 @@ namespace MapDataReader.Tests
 		FirstDude,
 		SecondDude,
 		Third,
+	}
+	
+	public enum MyEnumByte : byte
+	{
+		FirstLady,
+		SecondLady,
+		ThirdLady
+	}
+	
+	public enum MyEnumShort : short
+	{
+		FirstChild,
+		SecondChild,
+		ThirdChild
 	}
 
 	[GenerateDataReaderMapper]
@@ -39,6 +47,13 @@ namespace MapDataReader.Tests
 
 		public MyEnum Dude { get; set; }
 		public MyEnum? NullableDude { get; set; }
+
+		public MyEnumByte Lady { get; set; }
+		public MyEnumByte? NullableLady { get; set; }
+
+		public MyEnumShort Child { get; set; }
+		public MyEnumShort? NullableChild { get; set; }
+		
 		public string Name { get; set; }
 
 		public int GetOnly { get; } = 123; //property without public setter!
@@ -137,6 +152,46 @@ namespace MapDataReader.Tests
 
 			o.SetPropertyByName("NullableDude", MyEnum.FirstDude);
 			Assert.IsTrue(o.NullableDude == MyEnum.FirstDude);
+		}
+
+		[TestMethod]
+		public void TestEnumByteAssign()
+		{
+			var o = new MyObject();
+			o.SetPropertyByName("Lady", (byte)0);
+			Assert.IsTrue(o.Lady == MyEnumByte.FirstLady);
+
+			o.SetPropertyByName("Lady", (byte)1);
+			Assert.IsTrue(o.Lady == MyEnumByte.SecondLady);
+
+			o.SetPropertyByName("Lady", 2); // Let's check with an int
+			Assert.IsTrue(o.Lady == MyEnumByte.ThirdLady);
+
+			o.SetPropertyByName("NullableLady", (byte)1);
+			Assert.IsTrue(o.NullableLady == MyEnumByte.SecondLady);
+
+			o.SetPropertyByName("NullableLady", MyEnumByte.FirstLady);
+			Assert.IsTrue(o.NullableLady == MyEnumByte.FirstLady);
+		}
+
+		[TestMethod]
+		public void TestEnumShortAssign()
+		{
+			var o = new MyObject();
+			o.SetPropertyByName("Child", (short)0);
+			Assert.IsTrue(o.Child == MyEnumShort.FirstChild);
+
+			o.SetPropertyByName("Child", (short)1);
+			Assert.IsTrue(o.Child == MyEnumShort.SecondChild);
+
+			o.SetPropertyByName("Child", 2); // Let's check with an int
+			Assert.IsTrue(o.Child == MyEnumShort.ThirdChild);
+
+			o.SetPropertyByName("NullableChild", (short)1);
+			Assert.IsTrue(o.NullableChild == MyEnumShort.SecondChild);
+
+			o.SetPropertyByName("NullableChild", MyEnumShort.FirstChild);
+			Assert.IsTrue(o.NullableChild == MyEnumShort.FirstChild);
 		}
 
 		[TestMethod]
