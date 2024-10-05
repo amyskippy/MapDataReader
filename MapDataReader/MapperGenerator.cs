@@ -286,22 +286,109 @@ namespace MapDataReader
 
 			return result;
 		}
+		
+		/// <summary>
+		/// Checks if the type is nullable
+		/// </summary>
+		internal static bool IsNullable(this ITypeSymbol typeSymbol)
+		{
+			if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+				return true;
+			
+			return typeSymbol is INamedTypeSymbol 
+			{
+				OriginalDefinition.SpecialType: SpecialType.System_Nullable_T
+			};
+		}
 
 		/// <summary>
-		/// Checks if type is a nullable Enum
+		/// Checks if the type is a nullable value type
 		/// </summary>
-		internal static bool IsNullableEnum(this ITypeSymbol symbol)
+		internal static bool IsNullableValueType(this ITypeSymbol typeSymbol)
 		{
-			//tries to get underlying non-nullable type from nullable type
-			//and then check if it's Enum
-			if (symbol.NullableAnnotation == NullableAnnotation.Annotated
-			    && symbol is INamedTypeSymbol { IsValueType: true, IsGenericType: true } namedType
-			    && namedType.ConstructedFrom.ToDisplayString() == "System.Nullable<T>")
+			return typeSymbol is INamedTypeSymbol 
 			{
-				return namedType.TypeArguments[0].TypeKind == TypeKind.Enum;
-			}
-
-			return false;
+				OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
+				IsValueType: true,
+				IsGenericType: true
+			};
 		}
+
+		/// <summary>
+		/// Checks if the type is a nullable value type and gets the underlying type if it is
+		/// </summary>
+		internal static bool TryGetNullableValueUnderlyingType(this ITypeSymbol typeSymbol, out ITypeSymbol underlyingType)
+		{
+			underlyingType = null;
+
+			if (typeSymbol is not INamedTypeSymbol 
+			    {
+				    OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
+				    IsValueType: true,
+				    IsGenericType: true
+			    } namedType)
+			{
+				return false;
+			}
+			
+			underlyingType = namedType.TypeArguments[0];
+			
+			// TODO: decide what to return when the underlying type is not declared due to some compilation error.
+			// TypeKind.Error indicates a compilation error, specifically a nullable type where the underlying type was not found.
+			// I have observed that IsValueType will be true in such cases even though it is actually unknown whether the missing type is a value type
+			// I chose to return false but you may prefer something else. 
+			return underlyingType.TypeKind != TypeKind.Error;
+		}
+		
+		/// <summary>
+		/// Checks if the type is an enum
+		/// </summary>
+		internal static bool IsEnum(this ITypeSymbol typeSymbol)
+		{
+			return typeSymbol is INamedTypeSymbol { EnumUnderlyingType: not null };
+		}
+		
+		/// <summary>
+		/// Checks if the type is an enum and gets the underlying enum type if it is
+		/// </summary>
+		internal static bool TryGetEnum(this ITypeSymbol typeSymbol, out INamedTypeSymbol enumTypeSymbol)
+		{
+			enumTypeSymbol = null;
+
+			if (typeSymbol is not INamedTypeSymbol { EnumUnderlyingType: not null } namedType)
+			{
+				return false;
+			}
+			
+			enumTypeSymbol = namedType.EnumUnderlyingType;
+				
+			return true;
+		}
+		
+		/// <summary>
+		/// Checks if the type is a nullable enum
+		/// </summary>
+		internal static bool IsNullableEnum(this ITypeSymbol typeSymbol)
+		{
+			var isNullableValueType = typeSymbol.TryGetNullableValueUnderlyingType(out var underlyingType);
+			
+			return isNullableValueType && underlyingType.IsEnum();
+		}
+		
+		/// <summary>
+		/// Checks if the type is a nullable enum and gets the underlying enum typ if it is
+		/// </summary>
+		internal static bool TryGetNullableEnum(this ITypeSymbol typeSymbol, out INamedTypeSymbol enumTypeSymbol)
+		{
+			enumTypeSymbol = null;
+			
+			var isNullableValueType = typeSymbol.TryGetNullableValueUnderlyingType(out var underlyingType);
+
+			if (!isNullableValueType || underlyingType is null)
+				return false;
+				
+			return underlyingType.TryGetEnum(out enumTypeSymbol);
+		}
+
 	}
 }
