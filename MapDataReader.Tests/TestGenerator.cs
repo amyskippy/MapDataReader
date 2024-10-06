@@ -41,7 +41,30 @@ using MapDataReader;
 
 namespace MyCode
 {
-	[GenerateDataReaderMapper(AccessModifier = ""internal"")]
+	[GenerateDataReaderMapper(""internal"")]
+	public class MyClass
+	{
+		public string Name {get;set;}
+		public int Size {get;set;}
+		public bool Enabled {get;set;}
+		public System.DateTime Created {get;set;}
+		public System.DateTimeOffset Offset {get;set;}
+		public decimal Price {get;set;}
+	}
+}
+";
+			var src = GetAndCheckOutputSource(userSource);
+		}
+		
+		[TestMethod]
+		public void TestAttributes()
+		{
+			string userSource = @"
+using MapDataReader;
+
+namespace TestNamespace
+{
+	[GenerateDataReaderMapper(AccessModifier = ""internal"", NamespaceName = ""TestNamespace"")]
 	public class MyClass
 	{
 		public string Name {get;set;}
