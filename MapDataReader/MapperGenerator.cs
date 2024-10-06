@@ -66,9 +66,17 @@ namespace MapDataReader
 					using System.Collections.Generic; //to support List<T> etc
 
 					namespace MapDataReader;
-
+					
+					/// <summary>
+					/// MapDataReader extension methods
+					/// </summary>
+					/// <seealso cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</seealso>
 					public static class {{typeNode.Identifier}}Extensions
 					{
+						/// <summary>
+						/// Fast compile-time method for setting a property value by name
+						/// </summary>
+						/// <seealso cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</seealso>
 						public static void SetPropertyByName(this {{typeNodeSymbol.FullName()}} target, string name, object value)
 						{
 							SetPropertyByUpperName(target, name.ToUpperInvariant(), value);
@@ -115,6 +123,20 @@ namespace MapDataReader
 				{
 					src += $$"""
 						
+						/// <summary>
+						/// Map the data reader to <see cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</see>
+						/// </summary>
+						/// <seealso cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</seealso>
+						[Obsolete("Use To<T> instead, this will be removed in future versions.")]
+						public static List<{{typeNodeSymbol.FullName()}}> To{{typeNode.Identifier}}(this IDataReader dr)
+						{
+							return dr.To<{{typeNodeSymbol.FullName()}}>();
+						}
+						
+						/// <summary>
+						/// Map the data reader to <see cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</see>
+						/// </summary>
+						/// <seealso cref="{{typeNodeSymbol.FullName()}}">{{typeNode.Identifier}}</seealso>
 						public static List<{{typeNodeSymbol.FullName()}}> To<T>(this IDataReader dr) where T : {{typeNodeSymbol.FullName()}}
 						{
 							var list = new List<{{typeNodeSymbol.FullName()}}>();
