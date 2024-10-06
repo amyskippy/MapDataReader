@@ -11,6 +11,11 @@ public class GenerateDataReaderMapperAttribute : Attribute
 	/// Gets or sets the namespace to be used in the generated methods.
 	/// </summary>
 	public string NamespaceName { get; set; }
+		
+	/// <summary>
+	/// Gets or sets the method name to be used in the generated methods.
+	/// </summary>
+	public string MethodName { get; set; }
 
 	public GenerateDataReaderMapperAttribute()
 	{
