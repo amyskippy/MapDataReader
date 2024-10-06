@@ -8,14 +8,35 @@ using System.Linq;
 
 namespace MapDataReader
 {
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	/// <summary>
+	/// An attribute used to mark a class for which a data reader mapper will be generated.
+	/// </summary>
+	/// <remarks>
+	/// The auto-generated mappers will help in mapping data from a data reader to the class properties.
+	/// </remarks>
+	[AttributeUsage(AttributeTargets.Class)]
 	public class GenerateDataReaderMapperAttribute : Attribute
 	{
 	}
 
+	/// <summary>
+	/// A source generator responsible for creating mapping extensions that allow for setting properties of a class
+	/// based on the property name using data from a data reader.
+	/// </summary>
+	/// <remarks>
+	/// This generator scans for classes marked with specific attributes and generates an extension method
+	/// that facilitates setting properties by their names.
+	/// </remarks>
 	[Generator]
 	public class MapperGenerator : ISourceGenerator
 	{
+		private const string Newline = @"
+";
+
+		/// <summary>
+		/// Executes the source generation logic, which scans for types needing generation,
+		/// processes their properties, and generates the corresponding source code for mapping extensions.
+		/// </summary>
 		public void Execute(GeneratorExecutionContext context)
 		{
 			if (context.SyntaxContextReceiver is not TargetTypeTracker targetTypeTracker)
@@ -50,7 +71,7 @@ namespace MapDataReader
 					{
 						public static void SetPropertyByName(this {{typeNodeSymbol.FullName()}} target, string name, object value)
 						{
-								SetPropertyByUpperName(target, name.ToUpperInvariant(), value);
+							SetPropertyByUpperName(target, name.ToUpperInvariant(), value);
 						}
 
 						private static void SetPropertyByUpperName(this {{typeNodeSymbol.FullName()}} target, string name, object value)
@@ -85,42 +106,42 @@ namespace MapDataReader
 									return $"\t\tif (value != null && name == \"{p.Name.ToUpperInvariant()}\") {{ target.{p.Name} = value.GetType() == typeof({pTypeName}) ? ({pTypeName})value : ({pTypeName})Convert.ChangeType(value, typeof({pTypeName})); return; }}";
 								}).StringConcat(Newline)
 							}}
-									}
-
+						}
+						
 					""";
 
 
 				if (typeNodeSymbol.InstanceConstructors.Any(c => !c.Parameters.Any())) //has a constructor without parameters?
 				{
 					src += $$"""
-
+						
 						public static List<{{typeNodeSymbol.FullName()}}> To<T>(this IDataReader dr) where T : {{typeNodeSymbol.FullName()}}
 						{
 							var list = new List<{{typeNodeSymbol.FullName()}}>();
-								
-								if (dr.Read())
+							
+							if (dr.Read())
 							{
-									string[] columnNames = new string[dr.FieldCount];
-									
-									for (int i = 0; i < columnNames.Length; i++)
-										columnNames[i] = dr.GetName(i).ToUpperInvariant();
-
-									do
+								string[] columnNames = new string[dr.FieldCount];
+								
+								for (int i = 0; i < columnNames.Length; i++)
+								    columnNames[i] = dr.GetName(i).ToUpperInvariant();
+								    
+								do
 								{
 								    var result = new {{typeNodeSymbol.FullName()}}();
-										for (int i = 0; i < columnNames.Length; i++)
+								    for (int i = 0; i < columnNames.Length; i++)
 								    {
-											var value = dr[i];
-											if (value is DBNull) value = null;
-											SetPropertyByUpperName(result, columnNames[i], value);
+								        var value = dr[i];
+								        if (value is DBNull) value = null;
+								        SetPropertyByUpperName(result, columnNames[i], value);
 								    }
-										list.Add(result);
+									list.Add(result);
 								} while (dr.Read());
 							}
-								dr.Close();
-								return list;
-				}
-
+							dr.Close();
+							return list;
+						}
+					
 					""";
 				}
 				
@@ -132,6 +153,10 @@ namespace MapDataReader
 			}
 		}
 
+		/// <summary>
+		/// Initializes the generator. This method is called before any generation occurs and allows
+		/// for setting up any necessary context or registering for specific notifications.
+		/// </summary>
 		public void Initialize(GeneratorInitializationContext context)
 		{
 			context.RegisterForSyntaxNotifications(() => new TargetTypeTracker());
@@ -162,7 +187,9 @@ namespace MapDataReader
 
 		internal static string StringConcat(this IEnumerable<string> source, string separator) => string.Join(separator, source);
 
-		// returns all properties with public setters
+		/// <summary>
+		/// Returns all properties with public setters
+		/// </summary>
 		internal static IEnumerable<IPropertySymbol> GetAllSettableProperties(this ITypeSymbol typeSymbol)
 		{
 			var result = typeSymbol
@@ -179,7 +206,9 @@ namespace MapDataReader
 			return result;
 		}
 
-		//checks if type is a nullable num
+		/// <summary>
+		/// Checks if type is a nullable Enum
+		/// </summary>
 		internal static bool IsNullableEnum(this ITypeSymbol symbol)
 		{
 			//tries to get underlying non-nullable type from nullable type
