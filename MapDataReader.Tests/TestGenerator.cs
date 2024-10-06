@@ -64,7 +64,7 @@ using MapDataReader;
 
 namespace TestNamespace
 {
-	[GenerateDataReaderMapper(AccessModifier = ""internal"", NamespaceName = ""TestNamespace"")]
+	[GenerateDataReaderMapper(AccessModifier = ""internal"", NamespaceName = ""TestNamespace"", MethodName = ""ConvertToCustom"")]
 	public class MyClass
 	{
 		public string Name {get;set;}
