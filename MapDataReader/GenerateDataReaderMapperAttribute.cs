@@ -6,6 +6,11 @@ namespace MapDataReader;
 public class GenerateDataReaderMapperAttribute : Attribute
 {
 	public string AccessModifier { get; set; }
+		
+	/// <summary>
+	/// Gets or sets the namespace to be used in the generated methods.
+	/// </summary>
+	public string Namespace { get; set; }
 
 	public GenerateDataReaderMapperAttribute()
 	{
