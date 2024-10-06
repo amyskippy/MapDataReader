@@ -8,6 +8,12 @@ namespace MapDataReader.Tests
 	[TestClass]
 	public class TestGenerator
 	{
+		/// <summary>
+		/// Gets or sets the test context which provides
+		/// information about and functionality for the current test run.
+		/// </summary>
+		public TestContext TestContext { get; set; }
+
 		[TestMethod]
 		public void TestGeneral()
 		{
@@ -29,6 +35,8 @@ namespace MyCode
 }
 ";
 			var src = GetAndCheckOutputSource(userSource);
+			
+			TestContext.WriteLine(src);
 		}
 		
 		[TestMethod]
@@ -56,6 +64,8 @@ namespace MyCode
 }
 ";
 			var src = GetAndCheckOutputSource(userSource);
+			
+			TestContext.WriteLine(src);
 		}
 		
 		[TestMethod]
@@ -83,6 +93,8 @@ namespace MyCode
 }
 ";
 			var src = GetAndCheckOutputSource(userSource);
+			
+			TestContext.WriteLine(src);
 		}
 
 		//gets generated source and also unit-tests for exceptions and empty diagnistics etc
