@@ -70,7 +70,27 @@ namespace MapDataReader.Benchmarks
 		}
 
 		[Benchmark]
-		public void MapDataReader_ViaManualMap()
+		public void MapDataReader_ViaManualMap_CastMethods()
+		{
+			var dr = _dt.CreateDataReader();
+
+			var list = new List<TestClass>();
+			while (dr.Read())
+			{
+				list.Add(new TestClass
+				{
+					String1 = (string)dr["String1"],
+					String2 = (string)dr["String2"],
+					String3 = (string)dr["String3"],
+					Int = (int)dr["Int"],
+					Int2 = (int)dr["Int2"],
+					IntNullable = (int?)dr["IntNullable"]
+				});
+			}
+		}
+
+		[Benchmark]
+		public void MapDataReader_ViaManualMap_AsMethods()
 		{
 			var dr = _dt.CreateDataReader();
 
@@ -82,9 +102,29 @@ namespace MapDataReader.Benchmarks
 					String1 = dr["String1"] as string,
 					String2 = dr["String2"] as string,
 					String3 = dr["String3"] as string,
+					Int = dr["Int"] as int? ?? 0,
+					Int2 = dr["Int2"] as int? ?? 0,
+					IntNullable = dr["IntNullable"] as int?
+				});
+			}
+		}
+
+		[Benchmark]
+		public void MapDataReader_ViaManualMap_GetMethods()
+		{
+			var dr = _dt.CreateDataReader();
+
+			var list = new List<TestClass>();
+			while (dr.Read())
+			{
+				list.Add(new TestClass
+				{
+					String1 = dr.GetString(0),
+					String2 = dr.GetString(1),
+					String3 = dr.GetString(2),
 					Int = dr.GetInt32(3),
 					Int2 = dr.GetInt32(4),
-					IntNullable = dr["IntNullable"] as int?
+					IntNullable = dr.GetInt32(5) // this wouldn't work if the value is null though, this is just for benchmarking
 				});
 			}
 		}
